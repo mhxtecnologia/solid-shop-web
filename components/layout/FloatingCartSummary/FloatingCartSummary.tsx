@@ -17,11 +17,19 @@ export const FloatingCartSummary = () => {
     }, [dispatch]);
 
     const handleRemoveItem = async (productId: number) => {
-
         try {
             // Marcar como removendo
             setRemovingItems(prev => new Set([...prev, productId]));
+
+            const result = await dispatch(removeFromCart(productId));
+
+            if (result.type === 'cart/removeFromCart/fulfilled') {
+                console.log("Produto removido com sucesso");
+            } else {
+                console.error("Falha ao remover produto:", result);
+            }
         } catch (error) {
+            console.error("Erro ao remover item:", error);
         } finally {
             // Remover do estado de loading
             setRemovingItems(prev => {
