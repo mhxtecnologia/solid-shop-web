@@ -23,9 +23,9 @@ export const Header: React.FC = () => {
     return (
         <header className="sticky top-0 z-50 bg-white shadow-md">
             {/* Top Bar - Somente Desktop */}
-            <div className="bg-gray-100 border-b border-gray-200 hidden lg:block">
-                <div className="container mx-auto px-4 lg:px-6">
-                    <div className="flex justify-between items-center py-2">
+            <div className="hidden bg-gray-100 border-b border-gray-200 lg:block">
+                <div className="container px-4 mx-auto lg:px-6">
+                    <div className="flex items-center justify-between py-2">
                         <div className="flex items-center space-x-6">
                             <div className="flex items-center space-x-2 text-xs text-gray-600">
                                 <Phone size={14} />
@@ -50,31 +50,31 @@ export const Header: React.FC = () => {
 
             {/* Main */}
             <div className="bg-white">
-                <div className="container mx-auto px-4 lg:px-6">
+                <div className="container px-4 mx-auto lg:px-6">
                     <div className="flex items-center justify-between py-3 lg:py-4">
                         {/* Mobile Menu */}
                         <button
                             onClick={() => setIsMenuOpen(!isMenuOpen)}
-                            className="md:hidden p-2 text-gray-700 hover:primary"
+                            className="p-2 text-gray-700 md:hidden hover:primary"
                         >
                             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
                         </button>
 
                         {/* Logo */}
-                        <Logo href='https://stefanini.com/pt-br' />
+                        <Logo href='https://matheus.site' />
 
                         {/* Desktop Search */}
-                        <form onSubmit={handleSearch} className="hidden sm:flex flex-1 max-w-2xl mx-8">
+                        <form onSubmit={handleSearch} className="flex-1 hidden max-w-2xl mx-8 sm:flex">
                             <input
                                 type="text"
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 placeholder="Busque seu produto aqui..."
-                                className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-l-md outline-none"
+                                className="flex-1 px-4 py-3 border-2 border-gray-200 outline-none rounded-l-md"
                             />
                             <button
                                 type="submit"
-                                className="px-4 py-3 btn-primary text-white rounded-r-md cursor-pointer"
+                                className="px-4 py-3 text-white cursor-pointer btn-primary rounded-r-md"
                             >
                                 <Search size={20} />
                             </button>
@@ -85,17 +85,17 @@ export const Header: React.FC = () => {
                             {/* Mobile Search */}
                             <button
                                 onClick={() => setIsSearchOpen(!isSearchOpen)}
-                                className="sm:hidden p-2 text-gray-700 hover:text-red-600"
+                                className="p-2 text-gray-700 sm:hidden hover:text-red-600"
                             >
                                 <Search size={24} />
                             </button>
 
                             {/* User */}
                             <button
-                                className="flex items-center space-x-2 p-2 hover:bg-gray-50 rounded cursor-pointer"
+                                className="flex items-center p-2 space-x-2 rounded cursor-pointer hover:bg-gray-50"
                             >
                                 <User size={24} />
-                                <div className="hidden sm:block text-left">
+                                <div className="hidden text-left sm:block">
                                     <div className="text-xs font-medium">Olá!</div>
                                     <div className="text-xs text-gray-500">Matheus Henrique</div>
                                 </div>
@@ -105,18 +105,18 @@ export const Header: React.FC = () => {
 
                     {/* Mobile Search */}
                     {isSearchOpen && (
-                        <div className="sm:hidden py-3 border-t">
+                        <div className="py-3 border-t sm:hidden">
                             <form onSubmit={handleSearch} className="flex">
                                 <input
                                     type="text"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                     placeholder="Busque seu produto..."
-                                    className="flex-1 px-4 py-3 border-2 border-gray-200 rounded-l-md outline-none"
+                                    className="flex-1 px-4 py-3 border-2 border-gray-200 outline-none rounded-l-md"
                                 />
                                 <button
                                     type="submit"
-                                    className="px-4 py-3 btn-primary text-white rounded-r-md cursor-pointer"
+                                    className="px-4 py-3 text-white cursor-pointer btn-primary rounded-r-md"
                                 >
                                     <Search size={20} />
                                 </button>
@@ -133,13 +133,13 @@ export const Header: React.FC = () => {
                     : 'hidden md:block'
                     }`}
             >
-                <div className="container mx-auto px-4 lg:px-6">
+                <div className="container px-4 mx-auto lg:px-6">
                     <ul className="flex flex-col md:flex-row">
                         {['Masculino', 'Feminino', 'Infantil', 'Tênis', 'Roupas', 'Acessórios', 'Esportes', 'Marcas'].map((item) => (
                             <li key={item}>
                                 <a
                                     href={`/#`}
-                                    className="block px-4 py-4 hover:bg-gray-700 border-b border-gray-700 md:border-b-0"
+                                    className="block px-4 py-4 border-b border-gray-700 hover:bg-gray-700 md:border-b-0"
                                 >
                                     {item}
                                 </a>
@@ -148,7 +148,7 @@ export const Header: React.FC = () => {
                         <li>
                             <a
                                 href="/#"
-                                className="block px-4 py-4 hover:bg-gray-700 border-b border-gray-700 md:border-b-0 font-bold"
+                                className="block px-4 py-4 font-bold border-b border-gray-700 hover:bg-gray-700 md:border-b-0"
                             >
                                 Outros
                             </a>

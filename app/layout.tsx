@@ -22,7 +22,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Stefanini Shop',
+  title: 'Solid Shop',
   description: 'E-commerce application',
 };
 
@@ -38,7 +38,7 @@ export default function RootLayout({
       >
         <Providers>
           <Header />
-          <main className="flex-1 container pt-6 mx-auto px-4 lg:px-6">{children}</main>
+          <main className="container flex-1 px-4 pt-6 mx-auto lg:px-6">{children}</main>
           <Footer />
           <FloatingCartSummary />
         </Providers>

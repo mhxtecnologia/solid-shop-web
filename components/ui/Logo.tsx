@@ -17,7 +17,7 @@ export const Logo: React.FC<LogoProps> = ({
         <>
             {/* mobile */}
             {/* <Image
-                src="/images/stefanini_logo-1.webp"
+                src="/next.svg"
                 alt={alt}
                 width={100}
                 height={24}
@@ -30,7 +30,7 @@ export const Logo: React.FC<LogoProps> = ({
             
             {/* tablet */}
             <Image
-                src="/images/stefanini_logo-1.webp"
+                src="/next.svg"
                 alt={alt}
                 width={140}
                 height={32}
@@ -43,7 +43,7 @@ export const Logo: React.FC<LogoProps> = ({
             
             {/* desktop */}
             <Image
-                src="/images/stefanini_logo-1.webp"
+                src="/next.svg"
                 alt={alt}
                 width={180}
                 height={40}
@@ -60,7 +60,7 @@ export const Logo: React.FC<LogoProps> = ({
         return (
             <a 
                 href={href}
-                className="flex items-center focus:outline-none focus:ring-2 focus:ring-netshoes-red focus:ring-offset-2 rounded-sm"
+                className="flex items-center rounded-sm focus:outline-none focus:ring-2 focus:ring-netshoes-red focus:ring-offset-2"
                 aria-label="Ir para página inicial"
             >
                 {LogoImage}
