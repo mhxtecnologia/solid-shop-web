@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 
-import { Search, Menu, X, ShoppingCart, User, Heart, MapPin, Phone } from 'lucide-react';
+import { Search, Menu, X, User, MapPin, Phone } from 'lucide-react';
 
 import Link from 'next/link';
 import { Logo } from '@/components/ui/Logo';
@@ -157,21 +157,21 @@ export const Header: React.FC<HeaderProps> = ({ userEmail }) => {
                     <ul className="flex flex-col md:flex-row">
                         {['Masculino', 'Feminino', 'Infantil', 'Tênis', 'Roupas', 'Acessórios', 'Esportes', 'Marcas'].map((item) => (
                             <li key={item}>
-                                <a
-                                    href={`/#`}
+                                <Link
+                                    href="/"
                                     className="block px-4 py-4 border-b border-gray-700 hover:bg-gray-700 md:border-b-0"
                                 >
                                     {item}
-                                </a>
+                                </Link>
                             </li>
                         ))}
                         <li>
-                            <a
-                                href="/#"
+                            <Link
+                                href="/"
                                 className="block px-4 py-4 font-bold border-b border-gray-700 hover:bg-gray-700 md:border-b-0"
                             >
                                 Outros
-                            </a>
+                            </Link>
                         </li>
                     </ul>
                 </div>
