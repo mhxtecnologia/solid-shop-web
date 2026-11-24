@@ -1,199 +1,124 @@
-import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { CartState } from "@/types/cart";
+import { createAsyncThunk, createSlice, type PayloadAction } from '@reduxjs/toolkit';
+import type { Cart, CartState } from '@/types/cart';
 
-// Thunk para buscar carrinho
-export const fetchCart = createAsyncThunk(
-  "cart/fetchCart",
+export const UNAUTHENTICATED = 'UNAUTHENTICATED';
+
+interface CartApiError {
+  message?: string | string[];
+}
+
+/**
+ * Todas as chamadas vão para as rotas do próprio Next (/api/cart), que anexam o token do cookie
+ * HttpOnly. A API devolve o carrinho atualizado em cada operação: uma requisição por ação.
+ */
+async function cartRequest(path: string, init?: RequestInit): Promise<Cart> {
+  const res = await fetch(path, {
+    ...init,
+    cache: 'no-store',
+    headers: { 'content-type': 'application/json' },
+  });
+  if (res.status === 401) throw new Error(UNAUTHENTICATED);
+  if (!res.ok) {
+    const body = (await res.json().catch(() => ({}))) as CartApiError;
+    const message = Array.isArray(body.message) ? body.message[0] : body.message;
+    throw new Error(message ?? `Request failed (${res.status})`);
+  }
+  return ((await res.json()) as { cart: Cart }).cart;
+}
+
+const toMessage = (error: unknown) => (error instanceof Error ? error.message : 'Unknown error');
+
+export const fetchCart = createAsyncThunk<Cart, void, { rejectValue: string }>(
+  'cart/fetchCart',
   async (_, { rejectWithValue }) => {
     try {
-      const response = await fetch("http://localhost:3001/api/cart", {
-        cache: "no-store",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjF9.bvUhRcV7AH3QyTek3zNISJjuptWeqauFv2ghanWuVnc`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error("Falha ao buscar carrinho");
-      }
-
-      const data = await response.json();
-
-      return data.cart;
+      return await cartRequest('/api/cart');
     } catch (error) {
-
-      return rejectWithValue(
-        error instanceof Error ? error.message : "Erro desconhecido"
-      );
+      return rejectWithValue(toMessage(error));
     }
-  }
+  },
 );
 
-// Thunk para adicionar ao carrinho + buscar carrinho atualizado
-export const addToCart = createAsyncThunk(
-  "cart/addToCart",
-  async (productId: number, { rejectWithValue, dispatch }) => {
+export const addToCart = createAsyncThunk<Cart, number, { rejectValue: string }>(
+  'cart/addToCart',
+  async (productId, { rejectWithValue }) => {
     try {
-      // 1. Adicionar produto ao carrinho
-      const addResponse = await fetch("http://localhost:3001/api/cart/add", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjF9.bvUhRcV7AH3QyTek3zNISJjuptWeqauFv2ghanWuVnc`,
-        },
+      return await cartRequest('/api/cart/items', {
+        method: 'POST',
         body: JSON.stringify({ product_id: productId }),
       });
-
-      if (!addResponse.ok) {
-        const errorText = await addResponse.text();
-        throw new Error(`Falha ao adicionar produto: ${addResponse.status}`);
-      }
-
-      const addData = await addResponse.json();
-
-      // 2. Buscar carrinho atualizado
-      const cartResponse = await fetch("http://localhost:3001/api/cart", {
-        cache: "no-store",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjF9.bvUhRcV7AH3QyTek3zNISJjuptWeqauFv2ghanWuVnc`,
-        },
-      });
-
-      if (!cartResponse.ok) {
-        throw new Error("Falha ao buscar carrinho atualizado");
-      }
-
-      const cartData = await cartResponse.json();
-
-      return cartData.cart;
     } catch (error) {
-      return rejectWithValue(
-        error instanceof Error ? error.message : "Erro desconhecido"
-      );
+      return rejectWithValue(toMessage(error));
     }
-  }
+  },
 );
 
-// Thunk para remover do carrinho + buscar carrinho atualizado
-export const removeFromCart = createAsyncThunk(
-  "cart/removeFromCart",
-  async (productId: number, { rejectWithValue }) => {
+export const removeFromCart = createAsyncThunk<Cart, number, { rejectValue: string }>(
+  'cart/removeFromCart',
+  async (productId, { rejectWithValue }) => {
     try {
-
-      // 1. Remover produto do carrinho
-      const removeResponse = await fetch(
-        "http://localhost:3001/api/cart/remove",
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjF9.bvUhRcV7AH3QyTek3zNISJjuptWeqauFv2ghanWuVnc`,
-          },
-          body: JSON.stringify({ product_id: productId }),
-        }
-      );
-
-      if (!removeResponse.ok) {
-        const errorText = await removeResponse.text();
-        throw new Error(`Falha ao remover produto: ${removeResponse.status}`);
-      }
-
-      const removeData = await removeResponse.json();
-
-      // 2. Buscar carrinho atualizado
-      const cartResponse = await fetch("http://localhost:3001/api/cart", {
-        cache: "no-store",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOjF9.bvUhRcV7AH3QyTek3zNISJjuptWeqauFv2ghanWuVnc`,
-        },
-      });
-
-      if (!cartResponse.ok) {
-        throw new Error("Falha ao buscar carrinho atualizado");
-      }
-
-      const cartData = await cartResponse.json();
-
-      return cartData.cart;
+      return await cartRequest(`/api/cart/items/${productId}`, { method: 'DELETE' });
     } catch (error) {
-      return rejectWithValue(
-        error instanceof Error ? error.message : "Erro desconhecido"
-      );
+      return rejectWithValue(toMessage(error));
     }
-  }
+  },
 );
 
-const initialState: CartState = {
+export const initialState: CartState = {
   cart: null,
   loading: false,
   error: null,
+  authenticated: true,
 };
 
+function onFulfilled(state: CartState, action: PayloadAction<Cart>) {
+  state.loading = false;
+  state.cart = action.payload;
+  state.error = null;
+  state.authenticated = true;
+}
+
+function onRejected(state: CartState, action: { payload?: string }) {
+  state.loading = false;
+  // Sem sessão não é erro: o carrinho só some e a UI oferece "Entrar".
+  if (action.payload === UNAUTHENTICATED) {
+    state.authenticated = false;
+    state.cart = null;
+    state.error = null;
+    return;
+  }
+  state.error = action.payload ?? 'Unknown error';
+}
+
 const cartSlice = createSlice({
-  name: "cart",
+  name: 'cart',
   initialState,
   reducers: {
     clearError: (state) => {
       state.error = null;
     },
-    clearCart: (state) => {
-      state.cart = null;
-    },
   },
   extraReducers: (builder) => {
     builder
-      // Fetch Cart
       .addCase(fetchCart.pending, (state) => {
-        // Só mostrar loading se não tiver carrinho ainda
-        if (!state.cart) {
-          state.loading = true;
-        }
+        // Loading só na primeira carga, para os itens não sumirem a cada atualização.
+        if (!state.cart) state.loading = true;
         state.error = null;
       })
-      .addCase(fetchCart.fulfilled, (state, action) => {
-        state.loading = false;
-        state.cart = action.payload;
-        state.error = null;
-      })
-      .addCase(fetchCart.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-
-      // Add to Cart - Mantém itens visíveis durante a operação
+      .addCase(fetchCart.fulfilled, onFulfilled)
+      .addCase(fetchCart.rejected, onRejected)
       .addCase(addToCart.pending, (state) => {
-        // NÃO definir loading = true para não sumir os itens
         state.error = null;
       })
-      .addCase(addToCart.fulfilled, (state, action) => {
-        state.loading = false;
-        state.cart = action.payload; // Carrinho atualizado da API
-        state.error = null;
-      })
-      .addCase(addToCart.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      })
-
-      // Remove from Cart - Mantém outros itens visíveis
+      .addCase(addToCart.fulfilled, onFulfilled)
+      .addCase(addToCart.rejected, onRejected)
       .addCase(removeFromCart.pending, (state) => {
-        // NÃO definir loading = true para não sumir os itens
         state.error = null;
       })
-      .addCase(removeFromCart.fulfilled, (state, action) => {
-        state.loading = false;
-        state.cart = action.payload; // Carrinho atualizado da API
-        state.error = null;
-      })
-      .addCase(removeFromCart.rejected, (state, action) => {
-        state.loading = false;
-        state.error = action.payload as string;
-      });
+      .addCase(removeFromCart.fulfilled, onFulfilled)
+      .addCase(removeFromCart.rejected, onRejected);
   },
 });
 
-export const { clearError, clearCart } = cartSlice.actions;
+export const { clearError } = cartSlice.actions;
 export default cartSlice.reducer;

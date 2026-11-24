@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Solid Shop Web
 
-## Getting Started
+[![CI](https://github.com/mhxtecnologia/solid-shop-web/actions/workflows/ci.yml/badge.svg)](https://github.com/mhxtecnologia/solid-shop-web/actions/workflows/ci.yml)
 
-First, run the development server:
+Storefront for the [Solid Shop API](https://github.com/mhxtecnologia/solid-shop-api), built with
+**Next.js 15 (App Router), React 19, TypeScript, Redux Toolkit and Tailwind CSS**.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Highlights
+
+- **Server Components** render the catalog and product pages; the browser only downloads
+  JavaScript for the interactive parts (cart, add-to-cart button, login form).
+- **BFF with HttpOnly session cookie**: login is a Server Action that stores the API's JWT in
+  an `HttpOnly`, `SameSite=Lax` cookie. Client code calls `/api/cart/*` route handlers, which
+  attach the token server-side, so the token is never readable by JavaScript (XSS-safe).
+- **Input validated at the edge** (Zod) before being forwarded; numeric ids only in API paths.
+- **One request per cart action**: the API returns the updated cart on add/remove.
+- **Request deduplication** with React `cache()` for metadata + page data.
+- **Graceful auth states**: a `401` is "not signed in", not an error — the cart hides and the
+  header offers "Entrar"; an expired token clears the cookie.
+
+```mermaid
+sequenceDiagram
+  participant B as Browser
+  participant N as Next.js (BFF)
+  participant A as Solid Shop API
+  B->>N: POST login (Server Action)
+  N->>A: POST /api/auth/login
+  A-->>N: access_token
+  N-->>B: Set-Cookie (HttpOnly)
+  B->>N: POST /api/cart/items {product_id}
+  N->>A: POST /api/cart/items + Bearer token
+  A-->>N: updated cart
+  N-->>B: updated cart
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Running
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Start the API first (`docker compose up` in
+[solid-shop-api](https://github.com/mhxtecnologia/solid-shop-api)), then:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+cp .env.example .env.local
+npm install
+npm run dev
+```
 
-## Learn More
+Open `http://localhost:3000` and sign in with `demo@solidshop.dev` / `demo12345`.
 
-To learn more about Next.js, take a look at the following resources:
+## Tests
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm test
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Vitest + Testing Library: cart slice (BFF routes, 401 handling, single round trip),
+formatting helpers and the product grid.
 
-## Deploy on Vercel
+## License
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT

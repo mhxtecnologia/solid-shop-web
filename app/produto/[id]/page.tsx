@@ -1,31 +1,20 @@
+import type { Metadata } from 'next';
+import { notFound } from 'next/navigation';
 import { ProductCard } from '@components/layout/ProductCard';
+import { getProduct } from '@/lib/server/api';
 
-interface ProdutoPageProps {
-    params: Promise<{
-        id: string;
-    }>;
+interface ProductPageProps {
+  params: Promise<{ id: string }>;
 }
 
-export default async function ProdutoPage({ params }: ProdutoPageProps) {
-    const res = await fetch(`http://localhost:3001/api/products/${(await params).id}`, {
-        cache: "no-store",
-    });
+export async function generateMetadata({ params }: ProductPageProps): Promise<Metadata> {
+  const product = await getProduct((await params).id);
+  return { title: product ? `${product.name} | Solid Shop` : 'Produto não encontrado' };
+}
 
-    if (!res.ok) throw new Error("Falha ao buscar produto");
+export default async function ProductPage({ params }: ProductPageProps) {
+  const product = await getProduct((await params).id);
+  if (!product) notFound();
 
-    const produto = await res.json();
-
-    return (
-        <ProductCard
-            id={produto.product.data.id}
-            name={produto.product.data.name}
-            category={produto.product.data.category_id}
-            description={produto.product.data.description}
-            price={produto.product.data.price}
-            promotionalPrice={produto.product.data.promotion}
-            imageUrl={produto.product.data.photo}
-            rating={4.5}
-            reviewsCount={128}
-        />
-    );
+  return <ProductCard product={product} />;
 }

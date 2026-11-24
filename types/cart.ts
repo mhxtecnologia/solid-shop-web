@@ -8,16 +8,17 @@ export interface CartItem {
 }
 
 export interface Cart {
-  id: number;
-  user_id: number;
+  /** null enquanto o cliente ainda não tem carrinho. */
+  id: number | null;
+  client_id: number;
   items: CartItem[];
   total_cart_value: number;
-  created_at: string;
-  updated_at: string;
 }
 
 export interface CartState {
   cart: Cart | null;
   loading: boolean;
   error: string | null;
+  /** false quando o BFF respondeu 401: o usuário precisa entrar. */
+  authenticated: boolean;
 }

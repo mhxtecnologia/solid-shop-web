@@ -4,53 +4,35 @@ import React, { useState, useEffect } from 'react';
 import { ShoppingCart, X, CreditCard, Trash2 } from 'lucide-react';
 import { useAppDispatch, useAppSelector } from '@hooks/redux';
 import { fetchCart, removeFromCart } from '@store/cartSlice';
+import { formatPrice } from '@/lib/format';
 
 export const FloatingCartSummary = () => {
     const [isOpen, setIsOpen] = useState(false);
     const [removingItems, setRemovingItems] = useState<Set<number>>(new Set());
     const dispatch = useAppDispatch();
-    const { cart, loading, error } = useAppSelector((state) => state.cart);
+    const { cart, loading, error, authenticated } = useAppSelector((state) => state.cart);
 
-    // Buscar carrinho ao montar o componente
     useEffect(() => {
         dispatch(fetchCart());
     }, [dispatch]);
 
     const handleRemoveItem = async (productId: number) => {
-        try {
-            // Marcar como removendo
-            setRemovingItems(prev => new Set([...prev, productId]));
-
-            const result = await dispatch(removeFromCart(productId));
-
-            if (result.type === 'cart/removeFromCart/fulfilled') {
-                console.log("Produto removido com sucesso");
-            } else {
-                console.error("Falha ao remover produto:", result);
-            }
-        } catch (error) {
-            console.error("Erro ao remover item:", error);
-        } finally {
-            // Remover do estado de loading
-            setRemovingItems(prev => {
-                const newSet = new Set(prev);
-                newSet.delete(productId);
-                return newSet;
-            });
-        }
+        setRemovingItems(prev => new Set([...prev, productId]));
+        // Falhas ficam no state.error do slice e aparecem no painel.
+        await dispatch(removeFromCart(productId));
+        setRemovingItems(prev => {
+            const next = new Set(prev);
+            next.delete(productId);
+            return next;
+        });
     };
 
-    // Cálculos seguros
-    const itemCount = cart?.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
-    const totalValue = cart?.total_cart_value || 0;
-    const hasItems = cart?.items && cart.items.length > 0;
+    const itemCount = cart?.items.reduce((sum, item) => sum + item.quantity, 0) ?? 0;
+    const totalValue = cart?.total_cart_value ?? 0;
+    const hasItems = !!cart && cart.items.length > 0;
 
-    const formatPrice = (value: number) => {
-        return new Intl.NumberFormat('pt-BR', {
-            style: 'currency',
-            currency: 'BRL',
-        }).format(value);
-    };
+    // Sem sessão não há carrinho para mostrar; o cabeçalho oferece "Entrar".
+    if (!authenticated) return null;
 
     return (
         <>
@@ -124,12 +106,12 @@ export const FloatingCartSummary = () => {
                                 )}
 
                                 {/* Cart Items List - SEMPRE mostrar quando há itens */}
-                                {hasItems && cart.items.map((item, index) => {
+                                {hasItems && cart.items.map((item) => {
                                     const isRemoving = removingItems.has(item.product_id);
 
                                     return (
                                         <div
-                                            key={`cart-item-${item.product_id}-${index}-${item.id}`}
+                                            key={item.id}
                                             className={`flex gap-4 p-4 bg-gray-50 rounded-xl transition-all duration-200 ${isRemoving ? 'opacity-50 pointer-events-none' : 'hover:bg-gray-100'
                                                 }`}
                                         >

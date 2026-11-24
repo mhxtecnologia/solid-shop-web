@@ -4,9 +4,15 @@ import React, { useState } from 'react';
 
 import { Search, Menu, X, ShoppingCart, User, Heart, MapPin, Phone } from 'lucide-react';
 
+import Link from 'next/link';
 import { Logo } from '@/components/ui/Logo';
+import { logout } from '@/app/login/actions';
 
-export const Header: React.FC = () => {
+interface HeaderProps {
+    userEmail: string | null;
+}
+
+export const Header: React.FC<HeaderProps> = ({ userEmail }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [isSearchOpen, setIsSearchOpen] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
@@ -90,16 +96,30 @@ export const Header: React.FC = () => {
                                 <Search size={24} />
                             </button>
 
-                            {/* User */}
-                            <button
-                                className="flex items-center p-2 space-x-2 rounded cursor-pointer hover:bg-gray-50"
-                            >
-                                <User size={24} />
-                                <div className="hidden text-left sm:block">
-                                    <div className="text-xs font-medium">Olá!</div>
-                                    <div className="text-xs text-gray-500">Matheus Henrique</div>
-                                </div>
-                            </button>
+                            {/* Sessão: o e-mail vem do servidor (layout), o token nunca chega ao cliente */}
+                            {userEmail ? (
+                                <form action={logout} className="flex items-center p-2 space-x-2">
+                                    <User size={24} />
+                                    <div className="hidden text-left sm:block">
+                                        <div className="text-xs font-medium">Olá!</div>
+                                        <div className="text-xs text-gray-500">{userEmail}</div>
+                                    </div>
+                                    <button
+                                        type="submit"
+                                        className="ml-2 text-xs font-medium text-gray-700 underline cursor-pointer"
+                                    >
+                                        Sair
+                                    </button>
+                                </form>
+                            ) : (
+                                <Link
+                                    href="/login"
+                                    className="flex items-center p-2 space-x-2 rounded hover:bg-gray-50"
+                                >
+                                    <User size={24} />
+                                    <span className="text-sm font-medium">Entrar</span>
+                                </Link>
+                            )}
                         </div>
                     </div>
 

@@ -11,6 +11,8 @@ import { Header } from "@components/layout/Header/Header";
 
 import { Footer } from "@components/layout/Footer";
 
+import { getSessionEmail } from '@/lib/server/session';
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -26,18 +28,20 @@ export const metadata: Metadata = {
   description: 'E-commerce application',
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const userEmail = await getSessionEmail();
+
   return (
     <html lang="pt-BR">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen flex flex-col bg-background text-foreground`}
       >
         <Providers>
-          <Header />
+          <Header userEmail={userEmail} />
           <main className="container flex-1 px-4 pt-6 mx-auto lg:px-6">{children}</main>
           <Footer />
           <FloatingCartSummary />
